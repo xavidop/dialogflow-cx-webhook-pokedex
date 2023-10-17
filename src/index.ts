@@ -56,7 +56,7 @@ http("HandleWebhookRequest", async (req: Request, res: Response) => {
 
   console.log(response);
 
-  res.status(200).send(response.toJSON());
+  res.status(200).send(response);
 });
 
 
