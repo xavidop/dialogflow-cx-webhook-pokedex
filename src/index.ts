@@ -1,8 +1,12 @@
 /* eslint-disable max-len */
 import {http, Request, Response} from "@google-cloud/functions-framework";
 import {protos as dftypes} from "@google-cloud/dialogflow-cx";
-import {MainClient} from "pokenode-ts";
+// import * as protos from "@google-cloud/dialogflow-cx/build/protos/protos";
 
+import {struct} from "pb-util";
+
+
+import {MainClient} from "pokenode-ts";
 
 http("HandleWebhookRequest", async (req: Request, res: Response) => {
   type WebhookRequest = dftypes.google.cloud.dialogflow.cx.v3beta1.WebhookRequest;
@@ -26,7 +30,9 @@ http("HandleWebhookRequest", async (req: Request, res: Response) => {
     break;
   }
 
+
   const response: WebhookResponse = new dftypes.google.cloud.dialogflow.cx.v3beta1.WebhookResponse();
+
   response.fulfillmentResponse = {
     messages: [{
       text: {
@@ -34,9 +40,23 @@ http("HandleWebhookRequest", async (req: Request, res: Response) => {
           information,
         ],
       },
+      payload: struct.encode({
+        richContent: [
+          [
+            {
+              type: "image",
+              rawUrl: "https://example.com/images/logo.png",
+              accessibilityText: "Example logo",
+            },
+          ],
+        ],
+      }),
     }],
   };
-  res.status(200).send(response);
+
+  console.log(response);
+
+  res.status(200).send(response.toJSON());
 });
 
 
