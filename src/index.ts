@@ -3,9 +3,6 @@ import {http, Request, Response} from "@google-cloud/functions-framework";
 import {protos as dftypes} from "@google-cloud/dialogflow-cx";
 // import * as protos from "@google-cloud/dialogflow-cx/build/protos/protos";
 
-import {struct} from "pb-util";
-
-
 import {MainClient} from "pokenode-ts";
 
 http("HandleWebhookRequest", async (req: Request, res: Response) => {
@@ -40,17 +37,17 @@ http("HandleWebhookRequest", async (req: Request, res: Response) => {
           information,
         ],
       },
-      payload: struct.encode({
-        richContent: [
-          [
-            {
-              type: "image",
-              rawUrl: "https://example.com/images/logo.png",
-              accessibilityText: "Example logo",
-            },
-          ],
-        ],
-      }),
+      // payload: {
+      //   richContent: [
+      //     [
+      //       {
+      //         type: "image",
+      //         rawUrl: "https://example.com/images/logo.png",
+      //         accessibilityText: "Example logo",
+      //       },
+      //     ],
+      //   ],
+      // } as dftypes.google.protobuf.IStruct,
     }],
   };
 
