@@ -1,24 +1,60 @@
 /* eslint-disable max-len */
 import {http, Request, Response} from "@google-cloud/functions-framework";
 import {protos as dftypes} from "@google-cloud/dialogflow-cx";
+import {MainClient} from "pokenode-ts";
 
-http("HandleWebhookRequest", (req: Request, res: Response) => {
+
+http("HandleWebhookRequest", async (req: Request, res: Response) => {
   type WebhookRequest = dftypes.google.cloud.dialogflow.cx.v3beta1.WebhookRequest;
   type WebhookResponse = dftypes.google.cloud.dialogflow.cx.v3beta1.WebhookResponse;
 
   const body = <WebhookRequest>req.body;
-  console.log(body.languageCode);
+  console.log(body);
+
+  let information = "";
+  let pokemon = "";
+  let language = "";
+
+  switch (body.fulfillmentInfo?.tag) {
+  case "fetch_information":
+    pokemon = <string>body.sessionInfo?.parameters?.pokemon;
+    language = body.languageCode;
+    information = await getPokemonInformation(pokemon, language)+ " Deseas saber algo mas?";
+    break;
+
+  default:
+    break;
+  }
 
   const response: WebhookResponse = new dftypes.google.cloud.dialogflow.cx.v3beta1.WebhookResponse();
-
   response.fulfillmentResponse = {
     messages: [{
       text: {
         text: [
-          "Hello from Typescript",
+          information,
         ],
       },
     }],
   };
   res.status(200).send(response);
 });
+
+
+/**
+ * Returns information about a given Pokemon in the specified language.
+ * @param {string} pokemon - The name of the Pokemon to get information for.
+ * @param {string} language - The language to return the information in.
+ * @return {string} - The information about the Pokemon in the specified language.
+ */
+async function getPokemonInformation(pokemon:string, language:string): Promise<string> {
+  const api = new MainClient();
+
+  const pokemonInfo = await api.pokemon
+    .getPokemonSpeciesByName(pokemon);
+
+  const languageFiltered = pokemonInfo.flavor_text_entries.filter((info) => {
+    return info.language.name === language;
+  });
+
+  return languageFiltered[0].flavor_text;
+}
