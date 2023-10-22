@@ -3,7 +3,7 @@ import {http, Request, Response} from "@google-cloud/functions-framework";
 import {protos as dftypes} from "@google-cloud/dialogflow-cx";
 
 import {MainClient} from "pokenode-ts";
-import {RichContent, RichContentElement} from "./types";
+import {RichContent, RichContentElement} from "dialogflow-cx-messenger-ts";
 
 http("HandleWebhookRequest", async (req: Request, res: Response) => {
   const body = <dftypes.google.cloud.dialogflow.cx.v3beta1.IWebhookRequest>req.body;
