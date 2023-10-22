@@ -2,6 +2,9 @@
 1. Intent Based: this Agent is going to be used to test the webhook. It is an agent that retrieves information about pokemons. The interaction is based on intents and entities and calling webhooks.
 2. Generative AI: this Agent is going to be used to test the generateive AI capabilities, it calls LLMs (PALM 2 instead of a webhook). It is an agent that retrieves information about pokemons. The interaction is based on intents and entities and LLMs to fetch information. It uses Generative Fallback and Generators Capabilities.
 
+The intent-based one has a webhook that is going to be used to test the webhook capabilities of Dialogflow CX. The webhook is going to be written in Typescript and deployed on Google Cloud Functions. It uses the Dialogflow Messenger to test the agent and adds visual elements to the conversation:
+![image](/img/messenger.png)
+
 
 ## Deploying your Dialogflow CX Webhook
 
