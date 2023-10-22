@@ -1,34 +1,39 @@
 /* eslint-disable max-len */
 import {http, Request, Response} from "@google-cloud/functions-framework";
 import {protos as dftypes} from "@google-cloud/dialogflow-cx";
-// import * as protos from "@google-cloud/dialogflow-cx/build/protos/protos";
 
 import {MainClient} from "pokenode-ts";
+import {RichContent, RichContentElement} from "./types";
 
 http("HandleWebhookRequest", async (req: Request, res: Response) => {
-  type WebhookRequest = dftypes.google.cloud.dialogflow.cx.v3beta1.WebhookRequest;
-  type WebhookResponse = dftypes.google.cloud.dialogflow.cx.v3beta1.WebhookResponse;
-
-  const body = <WebhookRequest>req.body;
+  const body = <dftypes.google.cloud.dialogflow.cx.v3beta1.IWebhookRequest>req.body;
   console.log(body);
 
   let information = "";
   let pokemon = "";
   let language = "";
+  let sprite = "";
 
   switch (body.fulfillmentInfo?.tag) {
   case "fetch_information":
     pokemon = <string>body.sessionInfo?.parameters?.pokemon;
-    language = body.languageCode;
+    language = body.languageCode || "es";
     information = await getPokemonInformation(pokemon, language)+ " Deseas saber algo mas?";
+    sprite = await getPokemonSprite(pokemon) || "";
     break;
 
   default:
     break;
   }
 
+  const response: dftypes.google.cloud.dialogflow.cx.v3beta1.IWebhookResponse = {};
 
-  const response: WebhookResponse = new dftypes.google.cloud.dialogflow.cx.v3beta1.WebhookResponse();
+  const content = new RichContent();
+  const richContentElement = new RichContentElement();
+  richContentElement.type = "image";
+  richContentElement.rawUrl = sprite;
+  richContentElement.accessibilityText = "Example logo";
+  content.richContent = [[richContentElement]];
 
   response.fulfillmentResponse = {
     messages: [{
@@ -37,17 +42,9 @@ http("HandleWebhookRequest", async (req: Request, res: Response) => {
           information,
         ],
       },
-      // payload: {
-      //   richContent: [
-      //     [
-      //       {
-      //         type: "image",
-      //         rawUrl: "https://example.com/images/logo.png",
-      //         accessibilityText: "Example logo",
-      //       },
-      //     ],
-      //   ],
-      // } as dftypes.google.protobuf.IStruct,
+    },
+    {
+      payload: content,
     }],
   };
 
@@ -74,4 +71,18 @@ async function getPokemonInformation(pokemon:string, language:string): Promise<s
   });
 
   return languageFiltered[0].flavor_text;
+}
+
+/**
+ * Returns information about a given Pokemon in the specified language.
+ * @param {string} pokemon - The name of the Pokemon to get information for.
+ * @return {string} - The URL of the Pokemon Sprite.
+ */
+async function getPokemonSprite(pokemon:string): Promise<string|null> {
+  const api = new MainClient();
+
+  const p = await api.pokemon
+    .getPokemonByName(pokemon);
+
+  return p.sprites.front_default;
 }
